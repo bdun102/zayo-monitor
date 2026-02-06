@@ -1,0 +1,5 @@
+{
+  "version": "2.1",
+  "changelog": "Added auto-update checker, improved Last Update field detection.",
+  "download_url": "https://github.com/YOUR_USERNAME/zayo-monitor/releases/latest/download/zayo-monitor.zip"
+}
