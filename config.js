@@ -5,7 +5,7 @@
 var UPDATE_CONFIG = {
   // GitHub raw URL base - change 'YOUR_USERNAME' and 'YOUR_REPO'
   // Example: 'https://raw.githubusercontent.com/brycedoe/zayo-monitor/main'
-  repoBase: 'https://raw.githubusercontent.com/YOUR_USERNAME/zayo-monitor/main',
+  repoBase: 'https://github.com/bdun102/zayo-monitor.git',
 
   // How often to check for updates (in hours)
   checkIntervalHours: 6
