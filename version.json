@@ -1,0 +1,5 @@
+{
+  "version": "2.4",
+  "changelog": "Check All now opens background tabs for missing tickets. Improved scrape retry logic.",
+  "download_url": "https://github.com/YOUR_USERNAME/zayo-monitor/releases/latest/download/zayo-monitor.zip"
+}

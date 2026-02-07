@@ -1,0 +1,61 @@
+#zayo-monitor-badge {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(10, 10, 30, 0.92);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 180, 216, 0.4);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 12px;
+  color: #e0e0e0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: opacity 0.3s ease;
+  cursor: default;
+  user-select: none;
+}
+
+#zayo-monitor-badge .zm-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2ecc71;
+  animation: zm-pulse 2s infinite;
+  flex-shrink: 0;
+}
+
+#zayo-monitor-badge .zm-label {
+  font-weight: 600;
+  color: #00b4d8;
+  letter-spacing: 0.5px;
+}
+
+#zayo-monitor-badge .zm-ticket {
+  color: #888;
+  font-size: 11px;
+}
+
+#zayo-monitor-badge .zm-countdown {
+  color: #aaa;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+#zayo-monitor-badge.zm-paused .zm-dot {
+  background: #f39c12;
+  animation: none;
+}
+
+#zayo-monitor-badge.zm-inactive {
+  display: none;
+}
+
+@keyframes zm-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); }
+  50% { opacity: 0.6; box-shadow: 0 0 0 4px rgba(46, 204, 113, 0); }
+}

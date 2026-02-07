@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 380px;
+      max-height: 520px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    body::-webkit-scrollbar { width: 6px; }
+    body::-webkit-scrollbar-track { background: transparent; }
+    body::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 3px; }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #2a2a4a;
+    }
+
+    .header h1 { font-size: 15px; font-weight: 600; color: #00b4d8; flex: 1; }
+
+    .logo {
+      width: 26px; height: 26px;
+      background: linear-gradient(135deg, #00b4d8, #0077b6);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px; color: white; flex-shrink: 0;
+    }
+
+    .version { font-size: 10px; color: #555; }
+
+    .update-banner {
+      background: linear-gradient(135deg, #1a3a1a, #0d2b0d);
+      border: 1px solid #2ecc71;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .update-banner.visible { display: block; }
+
+    .update-banner .ub-title {
+      font-size: 12px; font-weight: 600; color: #2ecc71;
+      margin-bottom: 4px;
+    }
+    .update-banner .ub-changelog {
+      font-size: 11px; color: #aaa; margin-bottom: 8px;
+    }
+    .update-banner .ub-version {
+      font-size: 10px; color: #666; margin-bottom: 6px;
+    }
+    .btn-update {
+      width: 100%; padding: 7px; border: none; border-radius: 4px;
+      background: #2ecc71; color: #1a1a2e;
+      font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .btn-update:hover { background: #27ae60; }
+
+    .add-section {
+      background: #16213e;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .add-section .row { display: flex; gap: 8px; align-items: flex-end; }
+    .field { flex: 1; }
+
+    .field label {
+      display: block; font-size: 10px; text-transform: uppercase;
+      letter-spacing: 0.6px; color: #666; margin-bottom: 4px;
+    }
+
+    input[type="text"], input[type="number"] {
+      width: 100%; padding: 8px 10px;
+      background: #0d1b2a; border: 1px solid #2a2a4a; border-radius: 5px;
+      color: #e0e0e0; font-size: 13px; outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus { border-color: #00b4d8; }
+    input::placeholder { color: #444; }
+
+    .btn {
+      padding: 8px 14px; border: none; border-radius: 5px;
+      font-size: 12px; font-weight: 600; cursor: pointer;
+      transition: all 0.15s; white-space: nowrap;
+    }
+
+    .btn-add {
+      background: linear-gradient(135deg, #00b4d8, #0077b6);
+      color: white; height: 34px;
+    }
+    .btn-add:hover { opacity: 0.85; }
+
+    .btn-current {
+      width: 100%; background: #0d1b2a;
+      border: 1px dashed #00b4d8; color: #00b4d8;
+      padding: 8px; margin-top: 8px; font-size: 11px;
+      border-radius: 5px; cursor: pointer;
+    }
+    .btn-current:hover { background: #162a4a; }
+
+    .current-info {
+      font-size: 11px; color: #48cae4; margin-top: 6px;
+      padding: 4px 8px; background: rgba(0,180,216,0.08);
+      border-radius: 4px; display: none;
+    }
+    .current-info.visible { display: block; }
+
+    .list-header {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 8px;
+    }
+
+    .list-header h2 {
+      font-size: 12px; text-transform: uppercase;
+      letter-spacing: 0.8px; color: #666;
+    }
+
+    .list-count {
+      font-size: 11px; color: #00b4d8;
+      background: rgba(0,180,216,0.12);
+      padding: 2px 8px; border-radius: 10px;
+    }
+
+    .ticket-list {
+      display: flex; flex-direction: column;
+      gap: 6px; margin-bottom: 12px;
+    }
+
+    .ticket-card {
+      background: #16213e; border-radius: 6px;
+      padding: 10px 12px; display: flex;
+      align-items: center; gap: 10px;
+      border-left: 3px solid #2ecc71;
+      transition: all 0.15s;
+    }
+
+    .ticket-card.paused { border-left-color: #f39c12; opacity: 0.7; }
+
+    .ticket-card .tc-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #2ecc71; flex-shrink: 0;
+      animation: tc-pulse 2s infinite;
+    }
+
+    .ticket-card.paused .tc-dot { background: #f39c12; animation: none; }
+
+    @keyframes tc-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .tc-info { flex: 1; min-width: 0; }
+
+    .tc-ticket {
+      font-weight: 600; font-size: 13px; color: #00b4d8;
+      font-family: 'Consolas', 'Courier New', monospace;
+      text-decoration: none; cursor: pointer;
+    }
+    .tc-ticket:hover { text-decoration: underline; color: #48cae4; }
+    .tc-clickable { cursor: pointer; }
+
+    .tc-meta {
+      font-size: 10px; color: #666; margin-top: 2px;
+      display: flex; gap: 10px;
+    }
+    .tc-meta span { display: flex; align-items: center; gap: 3px; }
+
+    .tc-last-update {
+      font-size: 10px; color: #48cae4; margin-top: 3px;
+      font-family: 'Consolas', monospace;
+    }
+
+    .tc-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+    .btn-icon {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      border: none; border-radius: 4px;
+      background: #0d1b2a; color: #888;
+      cursor: pointer; font-size: 13px;
+      transition: all 0.15s;
+    }
+    .btn-icon:hover { color: #e0e0e0; background: #2a2a4a; }
+    .btn-icon.remove:hover { color: #e63946; }
+
+    .empty-state {
+      text-align: center; padding: 24px 16px;
+      color: #444; font-size: 12px;
+    }
+    .empty-state .empty-icon { font-size: 28px; margin-bottom: 8px; opacity: 0.4; }
+
+    .footer {
+      display: flex; gap: 6px; padding-top: 10px;
+      border-top: 1px solid #2a2a4a;
+    }
+
+    .btn-footer {
+      flex: 1; padding: 7px;
+      background: #0d1b2a; border: 1px solid #2a2a4a;
+      color: #888; font-size: 11px;
+      border-radius: 5px; cursor: pointer; text-align: center;
+    }
+    .btn-footer:hover { color: #e0e0e0; border-color: #3a3a5a; }
+
+    .error-msg {
+      font-size: 11px; color: #e63946;
+      margin-top: 6px; display: none;
+    }
+    .error-msg.visible { display: block; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">Z</div>
+    <h1>Zayo Ticket Monitor</h1>
+    <span class="version" id="versionLabel">v--</span>
+  </div>
+
+  <div class="update-banner" id="updateBanner">
+    <div class="ub-title">Update Available</div>
+    <div class="ub-version" id="updateVersions"></div>
+    <div class="ub-changelog" id="updateChangelog"></div>
+    <a id="updateLink" href="#" target="_blank">
+      <button class="btn-update">Download Update</button>
+    </a>
+  </div>
+
+  <div class="add-section">
+    <div class="row">
+      <div class="field">
+        <label>Ticket Number</label>
+        <input type="text" id="ticketInput" placeholder="TTN-0001234567">
+      </div>
+      <div class="field" style="max-width:80px;">
+        <label>Interval</label>
+        <input type="number" id="intervalInput" value="60" min="15" max="600" title="Refresh interval in seconds">
+      </div>
+      <button class="btn btn-add" id="addBtn" title="Add to monitoring list">Add</button>
+    </div>
+    <button class="btn-current" id="addCurrentBtn">+ Add Current Page</button>
+    <div class="current-info" id="currentInfo"></div>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <div class="list-header">
+    <h2>Monitoring</h2>
+    <span class="list-count" id="listCount">0</span>
+  </div>
+
+  <div class="ticket-list" id="ticketList">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">--</div>
+      No tickets being monitored.<br>Add a ticket above or open a Zayo ticket page.
+    </div>
+  </div>
+
+  <div class="footer">
+    <button class="btn-footer" id="testNotifBtn">Test Alert</button>
+    <button class="btn-footer" id="refreshAllBtn">Check All</button>
+    <button class="btn-footer" id="updateBtn">Updates</button>
+    <button class="btn-footer" id="clearAllBtn">Clear All</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
