@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', function() {
   var testNotifBtn = document.getElementById('testNotifBtn');
   var refreshAllBtn = document.getElementById('refreshAllBtn');
   var clearAllBtn = document.getElementById('clearAllBtn');
+  var importBtn = document.getElementById('importBtn');
+  var importInfo = document.getElementById('importInfo');
   var updateBanner = document.getElementById('updateBanner');
   var updateVersions = document.getElementById('updateVersions');
   var updateChangelog = document.getElementById('updateChangelog');
@@ -230,6 +232,107 @@ document.addEventListener('DOMContentLoaded', function() {
       addTicket(ticket, currentTabUrl);
     } else {
       showError('No ticket found on current page.');
+    }
+  });
+
+  importBtn.addEventListener('click', function() {
+    importBtn.textContent = 'Scanning...';
+    importBtn.style.opacity = '0.6';
+
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+      var tab = tabs[0];
+      if (!tab || !tab.url || tab.url.indexOf('tranzact.zayo.com') === -1) {
+        showError('Open the TranZact dashboard first (tranzact.zayo.com)');
+        importBtn.textContent = 'Import All from Dashboard';
+        importBtn.style.opacity = '1';
+        return;
+      }
+
+      chrome.tabs.sendMessage(tab.id, { action: 'scrapeTicketList' }, function(response) {
+        if (chrome.runtime.lastError) {
+          // Try injecting content script first
+          chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: ['content.js']
+          }, function() {
+            setTimeout(function() {
+              chrome.tabs.sendMessage(tab.id, { action: 'scrapeTicketList' }, function(resp) {
+                handleImportResponse(resp);
+              });
+            }, 1000);
+          });
+          return;
+        }
+        handleImportResponse(response);
+      });
+    });
+
+    function handleImportResponse(response) {
+      importBtn.textContent = 'Import All from Dashboard';
+      importBtn.style.opacity = '1';
+
+      if (!response || !response.success || response.count === 0) {
+        showError('No tickets found on this page. Make sure the ticket list is visible.');
+        return;
+      }
+
+      var found = response.tickets;
+      var interval = parseInt(intervalInput.value, 10) || 60;
+
+      chrome.storage.local.get(['monitorList'], function(data) {
+        var list = data.monitorList || [];
+        var added = 0;
+        var skipped = 0;
+
+        for (var i = 0; i < found.length; i++) {
+          var t = found[i];
+          var exists = list.some(function(e) { return e.ticket === t.ticket; });
+          if (exists) {
+            skipped++;
+            // Update URL if we have a better one now
+            if (t.url) {
+              for (var j = 0; j < list.length; j++) {
+                if (list[j].ticket === t.ticket) {
+                  list[j].url = t.url;
+                  break;
+                }
+              }
+            }
+            continue;
+          }
+
+          list.push({
+            ticket: t.ticket,
+            url: t.url,
+            intervalSec: interval,
+            active: true,
+            addedAt: new Date().toISOString(),
+            lastUpdateValue: null,
+            lastChecked: null,
+            changeCount: 0
+          });
+          added++;
+        }
+
+        chrome.storage.local.set({ monitorList: list }, function() {
+          // Start alarms for new tickets
+          for (var k = 0; k < found.length; k++) {
+            if (!list.some(function(e) { return e.ticket === found[k].ticket && !e.active; })) {
+              chrome.runtime.sendMessage({
+                action: 'startTicket',
+                ticket: found[k].ticket,
+                intervalSec: interval
+              });
+            }
+          }
+          renderList(list);
+
+          importInfo.style.display = 'block';
+          importInfo.textContent = 'Imported ' + added + ' ticket' + (added !== 1 ? 's' : '') +
+            (skipped > 0 ? ' (' + skipped + ' already in list)' : '');
+          setTimeout(function() { importInfo.style.display = 'none'; }, 5000);
+        });
+      });
     }
   });
 

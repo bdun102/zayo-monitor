@@ -101,9 +101,67 @@
     return { success: false, value: null, error: 'Last Update Date/Time not found', timestamp: new Date().toISOString() };
   }
 
+  // Scrape all ticket links from the dashboard/list page
+  function scrapeTicketList() {
+    var tickets = [];
+    var seen = {};
+    var links = document.querySelectorAll('a[href]');
+
+    for (var i = 0; i < links.length; i++) {
+      var href = links[i].href || '';
+      var match = href.match(/(TTN-\d{5,})/i);
+      if (match) {
+        var ticket = match[1].toUpperCase();
+        if (!seen[ticket]) {
+          seen[ticket] = true;
+          tickets.push({
+            ticket: ticket,
+            url: href
+          });
+        }
+      }
+    }
+
+    // Also check onclick handlers and ng-click attributes that might contain ticket refs
+    var allEls = document.querySelectorAll('[ng-click], [onclick]');
+    for (var j = 0; j < allEls.length; j++) {
+      var text = allEls[j].textContent.trim();
+      var attrMatch = text.match(/(TTN-\d{5,})/i);
+      if (attrMatch) {
+        var t = attrMatch[1].toUpperCase();
+        if (!seen[t]) {
+          seen[t] = true;
+          tickets.push({
+            ticket: t,
+            url: null
+          });
+        }
+      }
+    }
+
+    // Fallback: scan all visible text for TTN patterns and find nearest link
+    if (tickets.length === 0) {
+      var body = document.body.innerText;
+      var re = /TTN-\d{5,}/gi;
+      var m;
+      while ((m = re.exec(body)) !== null) {
+        var tk = m[0].toUpperCase();
+        if (!seen[tk]) {
+          seen[tk] = true;
+          tickets.push({ ticket: tk, url: null });
+        }
+      }
+    }
+
+    return { success: tickets.length > 0, tickets: tickets, count: tickets.length };
+  }
+
   chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
     if (msg.action === 'scrapeLastUpdate') {
       sendResponse(scrapeLastUpdate());
+    }
+    else if (msg.action === 'scrapeTicketList') {
+      sendResponse(scrapeTicketList());
     }
     else if (msg.action === 'getTicketFromURL') {
       sendResponse({ ticket: getTicketFromURL() });

@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.5 (2026-02-07)
+- Import All from Dashboard: scrapes every TTN link from the TranZact ticket list page
+- Auto-captures real URLs for each ticket during import (no more constructed URLs)
+- Skips duplicates, updates URLs for existing tickets if a better link is found
+- Bulk-starts monitoring for all imported tickets at once
+- Content script fallback injection if not yet loaded on dashboard page
+
 ## v2.4 (2026-02-07)
 - Check All now properly opens background tabs for tickets without open tabs
 - Sequential ticket checking with 10s stagger to avoid tab overload

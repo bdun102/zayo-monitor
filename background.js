@@ -2,7 +2,7 @@ importScripts('config.js');
 
 var ALARM_PREFIX = 'zayo-monitor-';
 var UPDATE_ALARM = 'zayo-monitor-update-check';
-var CURRENT_VERSION = '2.4';
+var CURRENT_VERSION = '2.5';
 
 chrome.alarms.onAlarm.addListener(function(alarm) {
   if (alarm.name === UPDATE_ALARM) {
